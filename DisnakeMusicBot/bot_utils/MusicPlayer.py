@@ -315,6 +315,7 @@ class VoiceState:
         self.voice = None
         self.next = asyncio.Event()
         self.songs = Queue()
+        self.now = None
         self.player_menu = None
 
         self._loop = False
@@ -369,6 +370,9 @@ class VoiceState:
                 except asyncio.TimeoutError:  # if no music playing for 3 minutes, stop the player
                     self.bot.loop.create_task(self.stop())
                     return
+            if self.loop is True:
+                self.now = disnake.FFmpegPCMAudio(self.current.source.stream_url, **YoutubeSource.FFMPEG_OPTIONS)
+                self.voice.play(self.now, after=self.play_next_song)
 
             self.current.source.volume = self.volume
             self.voice.play(self.current.source, after=self.play_next_song)
