@@ -10,7 +10,7 @@ from bot_utils.menus import MenuPages
 from disnake.ext import commands
 from jishaku.functools import executor_function
 from bot_utils.MusicPlayer import VoiceState, YoutubeSource, Song, VoiceError
-from bot_utils.checks import is_properly_connected, invoker_or_admin
+from bot_utils.checks import is_properly_connected, invoker_or_admin, is_in_same_channel
 from bot_utils.paginator import Paginator
 
 
@@ -266,6 +266,7 @@ class Music(commands.Cog):
     @commands.command(help="Make me leave a VC", aliases=["disconnect", "dc", "fuckoff"])
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def leave(self, ctx: commands.Context):
 
         dest = ctx.author.voice.channel
@@ -278,6 +279,7 @@ class Music(commands.Cog):
     @commands.command(help="Set the player volume", aliases=["vol"])
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def volume(self, ctx: commands.Context):
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
@@ -349,6 +351,7 @@ class Music(commands.Cog):
     @commands.command(help='Pause the actual player')
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def pause(self, ctx):
         server = ctx.message.guild
         voice_channel = server.voice_client
@@ -365,6 +368,7 @@ class Music(commands.Cog):
     @commands.command(help="Resume the paused player")
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def resume(self, ctx):
         server = ctx.message.guild
         voice_channel = server.voice_client
@@ -379,6 +383,7 @@ class Music(commands.Cog):
     @commands.command(help="Stop the current player.")
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def stop(self, ctx: commands.Context):
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
@@ -393,6 +398,7 @@ class Music(commands.Cog):
     @commands.command(name='loop', help="Loops the current playing song.")
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def loop(self, ctx: commands.Context):
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
@@ -417,6 +423,7 @@ class Music(commands.Cog):
     @commands.command(help="Skip the current song")
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def skip(self, ctx: commands.Context):
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
@@ -451,6 +458,7 @@ class Music(commands.Cog):
     @commands.command(help="Forcefully Skip the current song", aliases=['fs'])
     @invoker_or_admin()
     @is_properly_connected()
+    @is_in_same_channel()
     async def fskip(self, ctx: commands.Context):
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
@@ -493,6 +501,7 @@ class Music(commands.Cog):
     @commands.command(name='shuffle', help="Shuffle the queue")
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def shuffle(self, ctx: commands.Context):
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
@@ -512,6 +521,7 @@ class Music(commands.Cog):
     @commands.command(help="Remove a song from the queue")
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def remove(self, ctx: commands.Context, index: int):
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
@@ -524,6 +534,7 @@ class Music(commands.Cog):
     @commands.command(help="Clear the queue", aliases=["cq"])
     @is_properly_connected()
     @invoker_or_admin()
+    @is_in_same_channel()
     async def clearqueue(self, ctx: commands.Context):
 
         if len(ctx.voice_state.songs) == 0:
