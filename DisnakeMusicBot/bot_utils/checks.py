@@ -35,3 +35,16 @@ def invoker_or_admin():  # a decorator that checks the command Invoker is the sa
         return False
 
     return commands.check(predicate)
+
+
+def is_in_same_channel():  # a decorator that checks, if commands are invoked in the same channel or not.
+    async def predicate(ctx: commands.Context):
+        if ctx.voice_state.channel != ctx.channel:
+            await ctx.send(embed=disnake.Embed(
+                description=f"{ctx.bot.icons['info']} `{ctx.author}`, "
+                            f"you must run this command in {ctx.voice_state.channel.mention} .",
+                colour=disnake.Colour.random()))
+            return False
+        return True
+    return commands.check(predicate)
+
