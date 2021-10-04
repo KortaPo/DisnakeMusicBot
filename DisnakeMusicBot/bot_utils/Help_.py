@@ -91,9 +91,12 @@ class HelpCommand(commands.HelpCommand):
         homepage.set_author(name=ctx.author, icon_url=ctx.author.avatar.url)
         usable = 0
         for cog, commands in mapping.items():
-            if filtered_commands := await self.filter_commands(commands, sort=True):
-                amount_commands = len(filtered_commands)
-                usable += amount_commands
+            try:
+                if filtered_commands := await self.filter_commands(commands, sort=True):
+                    amount_commands = len(filtered_commands)
+                    usable += amount_commands
+            except:
+                pass
         homepage.add_field(name="Usable:", value=usable)
         homepage.add_field(name="Arguments:",
                            value="[] means the argument is optional.\n<> means the argument is required.")
@@ -178,3 +181,4 @@ class HelpCommand(commands.HelpCommand):
         embed.set_thumbnail(url=ctx.me.avatar.url)
         await ctx.send(embed=embed)
         return
+
