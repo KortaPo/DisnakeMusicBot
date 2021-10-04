@@ -1,5 +1,4 @@
-
-    from youtubesearchpython.__future__ import ChannelsSearch, VideosSearch
+from youtubesearchpython.__future__ import ChannelsSearch, VideosSearch
 import asyncio
 import math
 import re
