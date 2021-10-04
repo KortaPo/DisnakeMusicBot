@@ -1,4 +1,5 @@
-from youtubesearchpython.__future__ import ChannelsSearch, VideosSearch
+
+    from youtubesearchpython.__future__ import ChannelsSearch, VideosSearch
 import asyncio
 import math
 import re
@@ -10,7 +11,6 @@ from bot_utils.menus import MenuPages
 from disnake.ext import commands
 from jishaku.functools import executor_function
 from bot_utils.MusicPlayer import VoiceState, YoutubeSource, Song, VoiceError
-from bot_utils.checks import is_properly_connected, invoker_or_admin, is_in_same_channel
 from bot_utils.paginator import Paginator
 
 
@@ -264,10 +264,27 @@ class Music(commands.Cog):
         await ctx.send(embed=em)
 
     @commands.command(help="Make me leave a VC", aliases=["disconnect", "dc", "fuckoff"])
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def leave(self, ctx: commands.Context):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
+
+        if ctx.voice_state.channel != ctx.channel:
+            return await ctx.send(embed=disnake.Embed(
+                description=f"{ctx.bot.icons['info']} `{ctx.author}`, "
+                            f"you must run this command in {ctx.voice_state.channel.mention} .",
+                colour=disnake.Colour.random()))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
 
         dest = ctx.author.voice.channel
         await ctx.voice_state.stop()
@@ -277,10 +294,28 @@ class Music(commands.Cog):
         await ctx.send(embed=em)
 
     @commands.command(help="Set the player volume", aliases=["vol"])
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def volume(self, ctx: commands.Context):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
+
+        if ctx.voice_state.channel != ctx.channel:
+            return await ctx.send(embed=disnake.Embed(
+                description=f"{ctx.bot.icons['info']} `{ctx.author}`, "
+                            f"you must run this command in {ctx.voice_state.channel.mention} .",
+                colour=disnake.Colour.random()))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
+
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
                                                                   f"music right now... "
@@ -324,8 +359,21 @@ class Music(commands.Cog):
                             del self.voice_states[member.guild.id]
 
     @commands.command(help="See the actual song in playing", aliases=['np', 'nowplaying', 'current', 'playing'])
-    @is_properly_connected()
     async def now(self, ctx: commands.Context):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
+        if ctx.voice_state.channel != ctx.channel:
+            await ctx.send(embed=disnake.Embed(
+                description=f"{ctx.bot.icons['info']} `{ctx.author}`, "
+                            f"you must run this command in {ctx.voice_state.channel.mention} .",
+                colour=disnake.Colour.random()))
 
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{self.bot.icons['redtick']} Not playing any "
@@ -335,12 +383,27 @@ class Music(commands.Cog):
         await ctx.send(embed=ctx.voice_state.current.create_embed())
 
     @commands.command(help="Save the current song playing in your dms.", aliases=['whatmusic'])
-    @is_properly_connected()
     async def save(self, ctx: commands.Context):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
                                                                   f"music right now... "
                                                       , colour=disnake.Colour.random()))
+
+        if ctx.voice_state.channel != ctx.channel:
+            return await ctx.send(embed=disnake.Embed(
+                description=f"{ctx.bot.icons['info']} `{ctx.author}`, "
+                            f"you must run this command in {ctx.voice_state.channel.mention} .",
+                colour=disnake.Colour.random()))
+
         try:
             await ctx.author.send(content="The song that is being played.",
                                   embed=ctx.voice_state.current.create_embed())
@@ -349,10 +412,28 @@ class Music(commands.Cog):
                 embed=disnake.Embed(description=f"{self.bot.icons['redtick']} I am not able to dm you."))
 
     @commands.command(help='Pause the actual player')
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def pause(self, ctx):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
+
+        if ctx.voice_state.channel != ctx.channel:
+            return await ctx.send(embed=disnake.Embed(
+                description=f"{ctx.bot.icons['info']} `{ctx.author}`, "
+                            f"you must run this command in {ctx.voice_state.channel.mention} .",
+                colour=disnake.Colour.random()))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
+
         server = ctx.message.guild
         voice_channel = server.voice_client
         if not ctx.voice_state.is_playing:
@@ -366,10 +447,29 @@ class Music(commands.Cog):
         await message.add_reaction('⏯')
 
     @commands.command(help="Resume the paused player")
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def resume(self, ctx):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                               description=f"{ctx.bot.icons['redtick']} You are not "
+                                                           f"aren't in my voice channel."))
+            return False
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                               description=f"{ctx.bot.icons['redtick']} You are not "
+                                                           f"connected to any voice channel."))
+
+        if ctx.voice_state.channel != ctx.channel:
+            return await ctx.send(embed=disnake.Embed(
+                description=f"{ctx.bot.icons['info']} `{ctx.author}`, "
+                            f"you must run this command in {ctx.voice_state.channel.mention} .",
+                colour=disnake.Colour.random()))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
+
         server = ctx.message.guild
         voice_channel = server.voice_client
         if not ctx.voice_state.is_playing:
@@ -381,14 +481,32 @@ class Music(commands.Cog):
         await message.add_reaction('⏯')
 
     @commands.command(help="Stop the current player.")
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def stop(self, ctx: commands.Context):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                               description=f"{ctx.bot.icons['redtick']} You are not "
+                                                           f"aren't in my voice channel."))
+            return False
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                               description=f"{ctx.bot.icons['redtick']} You are not "
+                                                           f"connected to any voice channel."))
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
                                                                   f"music right now... "
                                                       , colour=disnake.Colour.random()))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
+
+        if ctx.voice_state.channel != ctx.channel:
+            return await ctx.send(embed=disnake.Embed(
+                description=f"{ctx.bot.icons['info']} `{ctx.author}`, "
+                            f"you must run this command in {ctx.voice_state.channel.mention} .",
+                colour=disnake.Colour.random()))
         em = disnake.Embed(title=f":zzz: Alright, I'll stop the current song.", color=disnake.Colour.random())
         em.set_footer(text=f"Stopped by {ctx.author.name}", icon_url=f"{ctx.author.avatar.url}")
         await ctx.send(embed=em)
@@ -396,14 +514,27 @@ class Music(commands.Cog):
         voice.stop()
 
     @commands.command(name='loop', help="Loops the current playing song.")
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def loop(self, ctx: commands.Context):
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
+
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
                                                                   f"music right now... "
                                                       , colour=disnake.Colour.random()))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
 
         if ctx.voice_state.loop is False:
             ctx.voice_state.loop = True
@@ -421,14 +552,27 @@ class Music(commands.Cog):
             return
 
     @commands.command(help="Skip the current song")
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def skip(self, ctx: commands.Context):
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
+
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
                                                                   f"music right now... "
                                                       , colour=disnake.Colour.random()))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
 
         voter = ctx.message.author
         if voter == ctx.voice_state.current.requester:
@@ -456,22 +600,40 @@ class Music(commands.Cog):
                                                            f"this song."))
 
     @commands.command(help="Forcefully Skip the current song", aliases=['fs'])
-    @invoker_or_admin()
-    @is_properly_connected()
-    @is_in_same_channel()
+    @commands.has_permissions(kick_members=True)
     async def fskip(self, ctx: commands.Context):
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
+
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
                                                                   f"music right now... "
                                                       , colour=disnake.Colour.random()))
+
         ctx.voice_state.skip()
         await ctx.send(
             embed=disnake.Embed(description=f"{self.bot.icons['headphones']} You have forcefully skipped this song.",
                                 color=disnake.Colour.random()))
 
     @commands.command(help="See the song queue", aliases=["q"])
-    @is_properly_connected()
     async def queue(self, ctx: commands.Context, *, page: int = 1):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
 
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
@@ -486,7 +648,6 @@ class Music(commands.Cog):
         queue = ''
         embeds = []
         for i, song in enumerate(ctx.voice_state.songs[start:end], start=start):
-
             queue += f"`{i + 1}.` [**{song.source.title}**]({song.source.url})\n`{song.source.duration}`\n\n"
             embed = disnake.Embed(color=disnake.Colour.random(),
                                   description=f"**{len(ctx.voice_state.songs)} Tracks in Queue**").set_footer(
@@ -499,10 +660,23 @@ class Music(commands.Cog):
         await queue_menu.start(ctx)
 
     @commands.command(name='shuffle', help="Shuffle the queue")
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def shuffle(self, ctx: commands.Context):
+
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
+
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
                                                                   f"music right now... "
@@ -519,10 +693,22 @@ class Music(commands.Cog):
         await message.add_reaction(f"{self.bot.icons['greentick']}")
 
     @commands.command(help="Remove a song from the queue")
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def remove(self, ctx: commands.Context, index: int):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                               description=f"{ctx.bot.icons['redtick']} You are not "
+                                                           f"aren't in my voice channel."))
+            return False
+
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                               description=f"{ctx.bot.icons['redtick']} You are not "
+                                                           f"connected to any voice channel."))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
                                                       description=f"{self.bot.icons['info']} The queue is empty."))
@@ -532,14 +718,29 @@ class Music(commands.Cog):
         await message.add_reaction(f"{self.bot.icons['greentick']}")
 
     @commands.command(help="Clear the queue", aliases=["cq"])
-    @is_properly_connected()
-    @invoker_or_admin()
-    @is_in_same_channel()
     async def clearqueue(self, ctx: commands.Context):
+        if ctx.author.voice.channel != ctx.guild.me.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"aren't in my voice channel."))
 
+        if not ctx.author.voice or not ctx.author.voice.channel:
+            return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
+                                                      description=f"{ctx.bot.icons['redtick']} You are not "
+                                                                  f"connected to any voice channel."))
+
+        if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
+            return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
+                                                                  "permission "
+                                                                  "to run this command... ", color=disnake.Colour.random()))
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
                                                       description=f"{self.bot.icons['info']} The queue is empty."))
+        if ctx.voice_state.channel != ctx.channel:
+            return await ctx.send(embed=disnake.Embed(
+                description=f"{ctx.bot.icons['info']} `{ctx.author}`, "
+                            f"you must run this command in {ctx.voice_state.channel.mention} .",
+                colour=disnake.Colour.random()))
 
         ctx.voice_state.songs.clear()
         message = await ctx.send(embed=disnake.Embed(description=f"{self.bot.icons['info']} Cleared the queue."))
