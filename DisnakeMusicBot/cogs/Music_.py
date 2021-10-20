@@ -1,4 +1,6 @@
 from youtubesearchpython.__future__ import ChannelsSearch, VideosSearch
+from disnake.ext.commands.params import Param
+from InfixParser import evaluate
 import asyncio
 import math
 import re
@@ -10,7 +12,7 @@ from bot_utils.menus import MenuPages
 from disnake.ext import commands
 from jishaku.functools import executor_function
 from bot_utils.MusicPlayer import VoiceState, YoutubeSource, Song, VoiceError
-from bot_utils.paginator import Paginator
+from bot_utils.paginator import Paginator, SimpleEmbedPages
 
 
 @executor_function
@@ -83,62 +85,12 @@ class Music(commands.Cog):
             em.add_field(name="Duration", value=video['duration'], inline=True)
             em.add_field(name="Views", value=video['viewCount']["text"])
             em.set_footer(
-                text=f"Use the reactions for downloading • Page: {int(videos.index(video)) + 1}/{len(videos)}")
+                text=f"Use the buttons for navigating • Page: {int(videos.index(video)) + 1}/{len(videos)}")
             em.set_thumbnail(url=video["thumbnails"][0]["url"])
             embeds.append(em)
 
-        msg = await ctx.reply(embed=embeds[0], mention_author=False)
-
-        page = 0
-
-        reactions = [self.bot.icons["fulleft"], self.bot.icons["left"], self.bot.icons["right"],
-                     self.bot.icons["fullright"], self.bot.icons["stop"]]
-
-        for r in reactions:
-            await msg.add_reaction(r)
-
-        while True:
-            try:
-                done, pending = await asyncio.wait([
-                    self.bot.wait_for("reaction_add", check=lambda reaction, user: str(
-                        reaction.emoji) in reactions and user == ctx.author and reaction.message == msg, timeout=30),
-                    self.bot.wait_for("reaction_remove", check=lambda reaction, user: str(
-                        reaction.emoji) in reactions and user == ctx.author and reaction.message == msg, timeout=30)
-                ], return_when=asyncio.FIRST_COMPLETED)
-            except (asyncio.TimeoutError, asyncio.CancelledError):
-                return
-
-            try:
-                reaction, user = done.pop().result()
-            except (asyncio.TimeoutError, asyncio.CancelledError):
-                return
-
-            for future in pending:
-                future.cancel()
-
-            if str(reaction.emoji) == reactions[0]:
-                if len(videos) != 1:
-                    page = 0
-                    await msg.edit(embed=embeds[page])
-
-            elif str(reaction.emoji) == reactions[1]:
-                if page != 0:
-                    page -= 1
-                    await msg.edit(embed=embeds[page])
-
-            elif str(reaction.emoji) == reactions[2]:
-                if len(videos) != 1:
-                    page += 1
-                    await msg.edit(embed=embeds[page])
-
-            elif str(reaction.emoji) == reactions[3]:
-                if page != len(videos):
-                    page = len(videos) - 1
-                    await msg.edit(embed=embeds[page])
-
-            elif str(reaction.emoji) == reactions[4]:
-                await msg.delete()
-                break
+        pag = SimpleEmbedPages(entries=embeds, ctx=ctx)
+        await pag.start()
 
     @youtube.command(aliases=["c"])
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -174,8 +126,8 @@ class Music(commands.Cog):
             em.set_thumbnail(url=thumbnail)
             embeds.append(em)
 
-        pag = await self.paginate(Paginator(embeds, per_page=1))
-        await pag.start(ctx)
+        pag = SimpleEmbedPages(entries=embeds, ctx=ctx)
+        await pag.start()
 
     @commands.command(aliases=['spot'])
     async def spotify(self, ctx, *, user: disnake.Member):
@@ -283,7 +235,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
 
         dest = ctx.author.voice.channel
         await ctx.voice_state.stop()
@@ -313,7 +266,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
 
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
@@ -431,7 +385,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
 
         server = ctx.message.guild
         voice_channel = server.voice_client
@@ -467,7 +422,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
 
         server = ctx.message.guild
         voice_channel = server.voice_client
@@ -499,7 +455,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
 
         if ctx.voice_state.channel != ctx.channel:
             return await ctx.send(embed=disnake.Embed(
@@ -533,7 +490,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
 
         if ctx.voice_state.loop is False:
             ctx.voice_state.loop = True
@@ -571,7 +529,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
 
         voter = ctx.message.author
         if voter == ctx.voice_state.current.requester:
@@ -655,8 +614,8 @@ class Music(commands.Cog):
         embed.add_field(name="\u200b", value=f"{queue}", inline=False)
         embeds.append(embed)
 
-        queue_menu = await self.paginate(Paginator(embeds, per_page=1))
-        await queue_menu.start(ctx)
+        queue_menu = SimpleEmbedPages(entries=embeds, ctx=ctx)
+        await queue_menu.start()
 
     @commands.command(name='shuffle', help="Shuffle the queue")
     async def shuffle(self, ctx: commands.Context):
@@ -674,7 +633,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
 
         if not ctx.voice_state.is_playing:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} Not playing any "
@@ -707,7 +667,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
                                                       description=f"{self.bot.icons['info']} The queue is empty."))
@@ -731,7 +692,8 @@ class Music(commands.Cog):
         if ctx.author.guild_permissions.kick_members is False and ctx.voice_state.invoker != ctx.author:
             return await ctx.send(embed=disnake.Embed(description=f"{ctx.bot.icons['redtick']} You do not have the "
                                                                   "permission "
-                                                                  "to run this command... ", color=disnake.Colour.random()))
+                                                                  "to run this command... ",
+                                                      color=disnake.Colour.random()))
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send(embed=disnake.Embed(color=disnake.Colour.random(),
                                                       description=f"{self.bot.icons['info']} The queue is empty."))
