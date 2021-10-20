@@ -1,7 +1,8 @@
 import json
+import pkgutil
+import traceback
 from traceback import print_exc
 from typing import Optional
-
 import disnake
 from aiohttp import ClientSession
 from disnake import Intents, AllowedMentions
@@ -13,16 +14,15 @@ from bot_utils.Help_ import HelpCommand
 class Bot(commands.AutoShardedBot):
     """A subclass of `commands.AutoShardedBot` with additional features."""
 
-    with open("./bot_utils/config.json") as f:
-        icons = json.load(f)
-    icons = icons["ICONS"]  # creating custom bot attributes
-
     def __init__(self, *args, **kwargs):
         intents = Intents.all()
         intents.dm_messages = False  # Disabling this Intent will make the Bot not receive DM message events
+        with open("./bot_utils/config.json") as f:
+            icons = json.load(f)
+        icons = icons["ICONS"]
 
         super().__init__(
-            command_prefix="?",
+            command_prefix="k!",
             intents=intents,
             allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False),
             help_command=HelpCommand(),
@@ -37,14 +37,18 @@ class Bot(commands.AutoShardedBot):
         with open("./bot_utils/config.json") as f:
             data = json.load(f)
 
-    def load_cogs(self, *exts) -> None:
+    def load_cogs(self, exts) -> None:
         """Load a set of extensions."""
 
-        for ext in exts:
+        for m in pkgutil.iter_modules([exts]):
+            # a much better way to load cogs
+            module = f"cogs.{m.name}"  # sadly no proper way to do this
             try:
-                self.load_extension(ext)
+                self.load_extension(module)
+                print(f"Loaded extension '{m.name}'")
             except Exception as e:
-                print_exc()
+                traceback.format_exc()
+        self.load_extension("jishaku")
 
     async def login(self, *args, **kwargs) -> None:
         """Create the ClientSession before logging in."""
